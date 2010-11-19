@@ -15,7 +15,7 @@ class BuildoutLexer(RegexLexer):
 
     name = 'BUILDOUT'
     aliases = ['buildout']
-    filenames = ['*.merdioulle']
+    filenames = ['*.cfg']
     mimetypes = ['text/x-buildout']
 
     tokens = {
