@@ -9,10 +9,8 @@ from pygments.token import Text, Comment, Name, String, Operator
 __all__ = ['BuildoutLexer']
 
 class BuildoutLexer(RegexLexer):
+    """Lexer for zc.buildout configuration files.
     """
-    Lexer for configuration files in INI style.
-    """
-
     name = 'BUILDOUT'
     aliases = ['buildout']
     filenames = ['*.cfg']
@@ -21,16 +19,21 @@ class BuildoutLexer(RegexLexer):
     tokens = {
         'root': [
             (r'[;#].*?$', Comment),
-            (r'(\[)(.*?)(\])$', bygroups(Operator.Word, Name.Namespace, Operator.Word)),
+            (r'(\[)(.*?)(\])$',
+             bygroups(Operator.Word, Name.Namespace, Operator.Word)),
             (r'(\S+)([ \t]*)([-+]?=)([ \t]*)',
-             bygroups(Name.Label, Text, Operator.Word, Text), ('section', 'option')),
+             bygroups(Name.Property, Text, Operator.Word, Text),
+             ('section', 'option')),
             ],
         'section': [
-            (r'(\[)(.*?)(\])\n', bygroups(Operator.Word, Name.Namespace, Operator.Word), '#pop'),
+            (r'(\[)(.*?)(\])\n',
+             bygroups(Operator.Word, Name.Namespace, Operator.Word),
+             '#pop'),
             (r'([ \t]*)[;#].*?\n', Comment),
             (r'([ \t]+)', bygroups(Text), 'option'),
             (r'(\S+)([ \t]*)([-+]?=)([ \t]*)',
-             bygroups(Name.Label, Text, Operator.Word, Text), 'option'),
+             bygroups(Name.Property, Text, Operator.Word, Text),
+             'option'),
             (r'\n', Text, '#pop')
             ],
         'option': [
@@ -40,7 +43,7 @@ class BuildoutLexer(RegexLexer):
             ],
         'variable': [
             (r'\}', Operator.Word, '#pop'),
-            (r'([^:]*)(:)([^}]*)', bygroups(Name.Namespace, Operator.Word, Name.Label)),
+            (r'([^:]*)(:)([^}]*)', bygroups(Name.Namespace, Operator.Word, Name.Property)),
             ]
     }
 
