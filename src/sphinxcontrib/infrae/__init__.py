@@ -3,13 +3,10 @@
 # See also LICENSE.txt
 # $Id$
 
-from pygments.lexers import _mapping
-from sphinxcontrib.infrae.autointerface import InterfaceDesc, InterfaceDocumenter
+from sphinxcontrib.infrae.buildout import BuildoutLexer
+from sphinxcontrib.infrae.autointerface import setup as autointerface_setup
 
 def setup(app):
-    app.add_directive_to_domain('py', 'interface', InterfaceDesc)
-    app.add_autodocumenter(InterfaceDocumenter)
-
-    _mapping.LEXERS['BuildoutLexer'] = (
-        'sphinxcontrib.infrae.buildout', 'BUILDOUT', ('buildout',), ('*.cfg',), ('text/x-buildout',))
+    autointerface_setup(app)
+    app.add_lexer('buildout', BuildoutLexer())
 

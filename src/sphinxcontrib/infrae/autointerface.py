@@ -7,15 +7,16 @@ import operator
 import types
 from sphinx.util.docstrings import prepare_docstring
 from sphinx.util import force_decode
-from sphinx.domains.python import PyClasslike
+from sphinx.domains.python import PyClasslike, PyXRefRole
 from sphinx.ext import autodoc
 from zope.interface import Interface
 
 
-class InterfaceDesc(PyClasslike):
+class PyInterface(PyClasslike):
+    objtype = 'interface'
 
-    def get_index_text(self, modname, name_cls):
-        return '%s (interface in %s)' % (name_cls[0], modname)
+    def get_index_text(self, modname, name):
+        return '.'.join((modname, name[0])) + u' (interface)'
 
 
 class InterfaceDocumenter(autodoc.ClassDocumenter):
@@ -38,21 +39,22 @@ class InterfaceDocumenter(autodoc.ClassDocumenter):
 
     def add_directive_header(self, sig):
         name = self.object.getName()
-        self.add_line(u'.. py:interface:: %s' % name, '<autodoc>')
+        module = self.object.__module__
+        self.add_line(u'.. py:interface:: %s' % name, '<autointerface>')
         if self.options.noindex:
-            self.add_line(u'   :noindex:', '<autodoc>')
+            self.add_line(u'   :noindex:', '<autointerface>')
         if self.objpath:
-            self.add_line(u'   :module: %s' % self.modname, '<autodoc>')
+            self.add_line(u'   :module: %s' % module, '<autointerface>')
 
     def add_content(self, more_content, no_docstring=False):
         autodoc.ClassDocumenter.add_content(self, more_content, no_docstring)
         bases = [base for base in self.object.__bases__ if base is not Interface]
         if bases:
-            self.add_line(u'This interface extends:', '<autodoc>')
-            self.add_line(u'', '<autodoc>')
+            self.add_line(u'This interface extends:', '<autointerface>')
+            self.add_line(u'', '<autointerface>')
             for base in bases:
-                self.add_line(u'- :class:`%s.%s`' % (base.__module__, base.getName()), '<autodoc>')
-                self.add_line(u'', '<autodoc>')
+                self.add_line(u'- :py:interface:`%s.%s`' % (base.__module__, base.getName()), '<autointerface>')
+                self.add_line(u'', '<autointerface>')
 
     def format_args(self):
         return ""
@@ -84,6 +86,7 @@ class InterfaceDocumenter(autodoc.ClassDocumenter):
 
 
 def setup(app):
-    app.add_directive_to_domain('py', 'interface', InterfaceDesc)
+    app.add_directive_to_domain('py', 'interface', PyInterface)
+    app.add_role_to_domain('py', 'interface', PyXRefRole())
     app.add_autodocumenter(InterfaceDocumenter)
 
