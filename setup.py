@@ -25,6 +25,8 @@ setup(name='sphinxcontrib.infrae',
       zip_safe=False,
       install_requires=[
         'Pygments',
+        'Sphinx >= 1.0',
         'setuptools',
+        'zope.interface',
         ],
       )

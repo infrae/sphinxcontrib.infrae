@@ -64,25 +64,41 @@ class InterfaceDocumenter(autodoc.ClassDocumenter):
         members = self.object.namesAndDescriptions()
         if self.options.sort_members:
             members.sort(key=operator.itemgetter(0))
-        for name, desc in members:
-            self.add_line(u'', '<autointerface>')
-            sig = getattr(desc, 'getSignatureString', None)
-            if sig is None:
-                self.add_line(u'.. attribute:: %s' % name, '<autointerface>')
+
+        attributes = []
+        methods = []
+        for name, description in members:
+            signature = getattr(description, 'getSignatureString', None)
+            if signature is None:
+                attributes.append((name, description))
             else:
-                self.add_line(u'.. method:: %s%s' % (name, sig()),
-                              '<autointerface>')
-            doc = desc.getDoc()
-            if doc:
+                methods.append((name, description, signature()))
+
+        def add_docstring(description):
+            docstring = description.getDoc()
+            if docstring:
                 self.add_line(u'', '<autointerface>')
                 self.indent += self.content_indent
-                sourcename = u'docstring of %s.%s' % (self.fullname, name)
-                docstrings=[prepare_docstring(force_decode(doc, None))]
-                for i, line in enumerate(self.process_doc(docstrings)):
-                    self.add_line(line, sourcename, i)
+                source_name = u'docstring of %s.%s' % (self.fullname, name)
+                docstring = [prepare_docstring(force_decode(docstring, None))]
+                for i, line in enumerate(self.process_doc(docstring)):
+                    self.add_line(line, source_name, i)
                 self.add_line(u'', '<autointerface>')
                 self.indent = oldindent
 
+        if attributes:
+            self.add_line(u'Interface attributes:', '<autointerface>')
+            for name, description in attributes:
+                self.add_line(u'', '<autointerface>')
+                self.add_line(u'.. attribute:: %s' % name, '<autointerface>')
+                add_docstring(description)
+
+        if methods:
+            self.add_line(u'Interface methods:', '<autointerface>')
+            for name, description, signature in methods:
+                self.add_line(u'', '<autointerface>')
+                self.add_line(u'.. method:: %s%s' % (name, signature), '<autointerface>')
+                add_docstring(description)
 
 
 def setup(app):
