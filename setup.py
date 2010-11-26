@@ -27,6 +27,8 @@ setup(name='sphinxcontrib.infrae',
         'Pygments',
         'Sphinx >= 1.0',
         'setuptools',
+        'zope.component',
         'zope.interface',
+        'zope.schema',
         ],
       )

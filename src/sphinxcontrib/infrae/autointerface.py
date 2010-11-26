@@ -11,6 +11,7 @@ from sphinx.domains.python import PyClasslike, PyXRefRole
 from sphinx.ext import autodoc
 
 from zope.interface import Interface
+from zope.schema.interfaces import IField, ICollection
 from zope.component.interfaces import IObjectEvent
 
 
@@ -25,6 +26,28 @@ class PyEvent(PyClasslike):
 
     def get_index_text(self, modname, name):
         return '%s (event in %s)' % (name[0], modname)
+
+
+class IndentBlock(object):
+    """Indent the rst of one level in a directive.
+    """
+
+    def __init__(self, block):
+        self.block = block
+        self.indent = block.indent
+
+    def __enter__(self):
+        self.block.indent += self.block.content_indent
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.block.indent = self.indent
+
+
+def schema_type(description):
+    field_type = description.__class__.__name__
+    if ICollection.providedBy(description):
+        field_type += ' of %s' % schema_type(description.value_type)
+    return field_type
 
 
 class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
@@ -87,7 +110,6 @@ class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
         if not self._document_members:
             return
 
-        oldindent = self.indent
         members = self.object.namesAndDescriptions()
         directive_name = '<auto%s>' % self.objtype
 
@@ -103,31 +125,44 @@ class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
             else:
                 methods.append((name, description, signature()))
 
-        def add_docstring(description):
-            docstring = description.getDoc()
+        def add_docstring(docstring):
             if docstring:
-                self.add_line(u'', directive_name)
-                self.indent += self.content_indent
-                source_name = u'docstring of %s.%s' % (self.fullname, name)
-                docstring = [prepare_docstring(force_decode(docstring, None))]
-                for i, line in enumerate(self.process_doc(docstring)):
-                    self.add_line(line, source_name, i)
-                self.add_line(u'', directive_name)
-                self.indent = oldindent
+                with IndentBlock(self):
+                    self.add_line(u'', directive_name)
+                    source_name = u'docstring of %s.%s' % (self.fullname, name)
+                    docstring = [prepare_docstring(force_decode(docstring, None))]
+                    for i, line in enumerate(self.process_doc(docstring)):
+                        self.add_line(line, source_name, i)
+                    self.add_line(u'', directive_name)
 
         if attributes:
             self.add_line(u'Available attributes:', directive_name)
             for name, description in attributes:
                 self.add_line(u'', directive_name)
                 self.add_line(u'.. attribute:: %s' % name, directive_name)
-                add_docstring(description)
+                if IField.providedBy(description):
+                    with IndentBlock(self):
+                        properties = u''
+                        if description.required:
+                            properties += u'required '
+                        properties += schema_type(description).lower()
+                        self.add_line(u'', directive_name)
+                        self.add_line(
+                            u'%s (*%s*).' % (description.title, properties),
+                            directive_name)
+                        if description.description:
+                            self.add_line(u'', directive_name)
+                            self.add_line(description.description, directive_name)
+                        self.add_line(u'', directive_name)
+                else:
+                    add_docstring(description.getDoc())
 
         if methods:
             self.add_line(u'Available methods:', directive_name)
             for name, description, signature in methods:
                 self.add_line(u'', directive_name)
                 self.add_line(u'.. method:: %s%s' % (name, signature), directive_name)
-                add_docstring(description)
+                add_docstring(description.getDoc())
 
 
 class EventDocumenter(AbstractInterfaceDocumenter):
