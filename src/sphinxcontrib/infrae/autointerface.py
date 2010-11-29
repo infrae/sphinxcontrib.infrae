@@ -44,7 +44,12 @@ class IndentBlock(object):
 
 
 def schema_type(description):
-    field_type = description.__class__.__name__
+    name = description.__class__.__name__
+    modulename = description.__class__.__module__
+    if modulename.startswith('zope.schema'):
+        # We hide the _bootstrap
+        modulename = 'zope.schema'
+    field_type = ':py:class:`%s<%s.%s>`' % (name, modulename, name)
     if ICollection.providedBy(description):
         field_type += ' of %s' % schema_type(description.value_type)
     return field_type
@@ -87,7 +92,8 @@ class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
             self.add_line(u'   :module: %s' % module, directive_name)
 
     def add_content(self, more_content, no_docstring=False):
-        autodoc.Documenter.add_content(self, more_content, self.options.nodocstring)
+        autodoc.Documenter.add_content(
+            self, more_content, self.options.nodocstring)
         objtype = self.objtype
         directive_name = '<auto%s>' % objtype
         bases = [base for base in self.object.__bases__
@@ -99,7 +105,8 @@ class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
             self.add_line(u'', directive_name)
             for base in bases:
                 self.add_line(
-                    u'- :py:%s:`%s.%s`' % (objtype, base.__module__, base.getName()),
+                    u'- :py:%s:`%s.%s`' % (
+                        objtype, base.__module__, base.getName()),
                     directive_name)
                 self.add_line(u'', directive_name)
 
@@ -144,15 +151,17 @@ class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
                     with IndentBlock(self):
                         properties = u''
                         if description.required:
-                            properties += u'required '
-                        properties += schema_type(description).lower()
+                            properties += u'*required* '
+                        properties += schema_type(description)
                         self.add_line(u'', directive_name)
                         self.add_line(
-                            u'%s (*%s*).' % (description.title, properties),
+                            u'%s (%s).' % (description.title, properties),
                             directive_name)
                         if description.description:
                             self.add_line(u'', directive_name)
-                            self.add_line(description.description, directive_name)
+                            self.add_line(
+                                description.description,
+                                directive_name)
                         self.add_line(u'', directive_name)
                 else:
                     add_docstring(description.getDoc())
@@ -161,7 +170,9 @@ class AbstractInterfaceDocumenter(autodoc.ClassDocumenter):
             self.add_line(u'Available methods:', directive_name)
             for name, description, signature in methods:
                 self.add_line(u'', directive_name)
-                self.add_line(u'.. method:: %s%s' % (name, signature), directive_name)
+                self.add_line(
+                    u'.. method:: %s%s' % (name, signature),
+                    directive_name)
                 add_docstring(description.getDoc())
 
 
