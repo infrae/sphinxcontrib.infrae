@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.0dev'
+version = '1.0'
 
 setup(name='sphinxcontrib.infrae',
       version=version,
-      description="Add ons to sphinx",
+      description="Add-ons to sphinx to document Zope event and interfaces (and buildout configuration).",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
