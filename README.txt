@@ -20,3 +20,8 @@ Infrae extension for Sphinx. This add:
 
   Example: ``autoevent:: module.name.to.your.event``.
 
+Code repository
+===============
+
+You can find the code of this extension in Git:
+https://github.com/infrae/sphinxcontrib.infrae

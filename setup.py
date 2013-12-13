@@ -5,7 +5,7 @@ version = '1.1dev'
 
 setup(name='sphinxcontrib.infrae',
       version=version,
-      description="Add-ons to sphinx to document Zope event and interfaces (and buildout configuration).",
+      description="Add-ons to Sphinx to document Zope event and interfaces (and buildout configuration)",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
@@ -16,7 +16,7 @@ setup(name='sphinxcontrib.infrae',
       keywords='sphinx color buildout zope interface',
       author='Infrae',
       author_email='info@infrae.com',
-      url='http://infrae.com',
+      url='https://github.com/infrae/sphinxcontrib.infrae',
       license='BSD',
       package_dir={'': 'src'},
       packages=find_packages('src', exclude=['ez_setup']),
